@@ -61,7 +61,7 @@ export interface ReceiveItem {
   product: Product;
   expectedQty: number;
   receivedQty: number;
-  status: 'ok' | 'shortage' | 'excess' | 'wrong' | 'expiring';
+  status: 'ok' | 'shortage' | 'excess' | 'wrong' | 'expiring' | 'pending';
   batchNo?: string;
   expiryDate?: string;
   remark?: string;

@@ -3,9 +3,8 @@ import { View, Text, ScrollView, Input } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { getOrderById } from '@/data/order';
-import { getReceiveRecordById } from '@/data/receive';
-import { Order, ReceiveItem } from '@/types';
+import { useAppState } from '@/store/app-context';
+import { ReceiveItem } from '@/types';
 
 interface ReceiveItemState extends ReceiveItem {
   receivedQty: number;
@@ -25,40 +24,46 @@ const ReceiveDetailPage: React.FC = () => {
   const orderId = router.params.orderId as string;
   const recordId = router.params.id as string;
 
-  const [order, setOrder] = useState<Order | null>(null);
+  const { orders, receiveRecords, addReceiveRecord, updateOrder } = useAppState();
+
+  const order = useMemo(() => {
+    if (orderId) return orders.find(o => o.id === orderId) || null;
+    if (recordId) {
+      const record = receiveRecords.find(r => r.id === recordId);
+      return record ? orders.find(o => o.id === record.orderId) || null : null;
+    }
+    return null;
+  }, [orders, receiveRecords, orderId, recordId]);
+
+  const existingRecord = useMemo(() => {
+    if (recordId) return receiveRecords.find(r => r.id === recordId) || null;
+    return null;
+  }, [receiveRecords, recordId]);
+
+  const isViewMode = !!existingRecord;
+
   const [items, setItems] = useState<ReceiveItemState[]>([]);
-  const [isViewMode, setIsViewMode] = useState(false);
 
   useEffect(() => {
-    if (recordId) {
-      const record = getReceiveRecordById(recordId);
-      if (record) {
-        setIsViewMode(true);
-        setItems(record.items.map((item) => ({ ...item })));
-        const o = getOrderById(record.orderId);
-        setOrder(o || null);
-      }
-    } else if (orderId) {
-      const o = getOrderById(orderId);
-      if (o) {
-        setOrder(o);
-        const initialItems: ReceiveItemState[] = o.items.map((item) => ({
-          productId: item.productId,
-          product: item.product,
-          expectedQty: item.quantity,
-          receivedQty: 0,
-          status: 'pending',
-        }));
-        setItems(initialItems);
-      }
+    if (existingRecord) {
+      setItems(existingRecord.items.map(item => ({ ...item })));
+    } else if (order) {
+      const initialItems: ReceiveItemState[] = order.items.map(item => ({
+        productId: item.productId,
+        product: item.product,
+        expectedQty: item.quantity,
+        receivedQty: 0,
+        status: 'pending' as const,
+      }));
+      setItems(initialItems);
     }
-  }, [orderId, recordId]);
+  }, [order, existingRecord]);
 
   const summary = useMemo(() => {
     const totalExpected = items.reduce((sum, item) => sum + item.expectedQty, 0);
     const totalReceived = items.reduce((sum, item) => sum + item.receivedQty, 0);
-    const abnormalCount = items.filter((item) => item.status !== 'pending' && item.status !== 'ok').length;
-    const completedCount = items.filter((item) => item.status !== 'pending').length;
+    const abnormalCount = items.filter(item => item.status !== 'pending' && item.status !== 'ok').length;
+    const completedCount = items.filter(item => item.status !== 'pending').length;
     return { totalExpected, totalReceived, abnormalCount, completedCount };
   }, [items]);
 
@@ -90,15 +95,15 @@ const ReceiveDetailPage: React.FC = () => {
   };
 
   const handleScan = () => {
-    if (isViewMode) return;
+    if (isViewMode || !order) return;
     Taro.navigateTo({
-      url: `/pages/scan/index?mode=receive&orderId=${orderId}`,
+      url: `/pages/scan/index?mode=receive&orderId=${order.id}`,
     });
   };
 
   const handleMarkAllReceived = () => {
     if (isViewMode) return;
-    const newItems = items.map((item) => ({
+    const newItems = items.map(item => ({
       ...item,
       receivedQty: item.expectedQty,
       status: 'ok' as const,
@@ -123,6 +128,31 @@ const ReceiveDetailPage: React.FC = () => {
       content,
       success: (res) => {
         if (res.confirm) {
+          const now = new Date();
+          const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+          const recordStatus = summary.abnormalCount > 0
+            ? (items.every(i => i.status === 'ok') ? 'complete' : 'partial')
+            : 'complete';
+
+          const newRecord = {
+            id: `r_new_${Date.now()}`,
+            orderId: order!.id,
+            orderNo: order!.orderNo,
+            items: items.filter(i => i.status !== 'pending'),
+            totalExpected: summary.totalExpected,
+            totalReceived: summary.totalReceived,
+            status: recordStatus as 'pending' | 'partial' | 'complete',
+            receiveTime: timeStr,
+            operator: '张护士长',
+          };
+
+          addReceiveRecord(newRecord);
+          updateOrder(order!.id, {
+            status: 'received',
+            receiveTime: timeStr,
+          });
+
           Taro.showToast({ title: '验收记录已生成', icon: 'success' });
           setTimeout(() => {
             Taro.navigateBack();

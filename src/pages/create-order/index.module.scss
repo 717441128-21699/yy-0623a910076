@@ -10,7 +10,7 @@
   background: $color-bg-card;
   padding: $spacing-md $page-padding;
   display: flex;
-  gap: $spacing-md;
+  gap: $spacing-sm;
   border-bottom: 1rpx solid $color-divider;
   position: sticky;
   top: 0;
@@ -43,6 +43,41 @@
 
 .filterIcon {
   font-size: $font-size-md;
+}
+
+.subFilterBar {
+  background: $color-bg-card;
+  padding: $spacing-sm $page-padding;
+  border-bottom: 1rpx solid $color-divider;
+  display: flex;
+  gap: $spacing-sm;
+  overflow-x: auto;
+  white-space: nowrap;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.subFilterItem {
+  display: inline-block;
+  padding: 12rpx 24rpx;
+  background: $color-bg-section;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
 }
 
 .categoryScroll {
@@ -86,9 +121,13 @@
   border-radius: $radius-lg;
   padding: $spacing-lg;
   margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.productTop {
   display: flex;
   gap: $spacing-md;
-  box-shadow: $shadow-card;
+  margin-bottom: $spacing-sm;
 }
 
 .checkbox {
@@ -138,6 +177,7 @@
   display: flex;
   align-items: center;
   gap: $spacing-sm;
+  flex-wrap: wrap;
 }
 
 .brandTag {
@@ -169,11 +209,43 @@
   }
 }
 
-.productRight {
+.supplierRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+  margin-top: $spacing-xs;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.supplierInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex: 1;
+  min-width: 0;
+}
+
+.supplierName {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+  max-width: 240rpx;
+}
+
+.deliveryDays {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: $color-primary-bg;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-xs;
+  flex-shrink: 0;
+}
+
+.priceInfo {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  justify-content: space-between;
   flex-shrink: 0;
 }
 
@@ -181,6 +253,25 @@
   font-size: $font-size-lg;
   font-weight: $font-weight-bold;
   color: $color-stock-danger;
+}
+
+.priceUnit {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.qtyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.qtyLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
 }
 
 .qtyControl {
@@ -352,4 +443,178 @@
 .emptyText {
   font-size: $font-size-md;
   color: $color-text-tertiary;
+}
+
+.reviewOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+}
+
+.reviewPanel {
+  width: 100%;
+  max-height: 80vh;
+  background: $color-bg-card;
+  border-radius: $radius-xl $radius-xl 0 0;
+  padding: $spacing-xl $page-padding;
+  padding-bottom: calc(#{$spacing-xl} + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.reviewTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.reviewClose {
+  font-size: $font-size-xl;
+  color: $color-text-tertiary;
+  padding: $spacing-sm;
+}
+
+.reviewItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.reviewItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.reviewItemName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+}
+
+.reviewItemSpec {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+}
+
+.reviewItemSupplier {
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.reviewItemRight {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: $spacing-md;
+}
+
+.reviewItemQty {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.reviewItemPrice {
+  font-size: $font-size-sm;
+  color: $color-stock-danger;
+  font-weight: $font-weight-semibold;
+}
+
+.reviewTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg 0;
+  border-top: 2rpx solid $color-divider;
+  margin-top: $spacing-md;
+}
+
+.reviewTotalLabel {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.reviewTotalAmount {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-stock-danger;
+}
+
+.reviewRemark {
+  padding: $spacing-md;
+  background: $color-bg-section;
+  border-radius: $radius-md;
+  margin: $spacing-md 0;
+}
+
+.reviewRemarkLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 6rpx;
+}
+
+.reviewRemarkText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.reviewActions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.reviewCancelBtn {
+  flex: 1;
+  height: 88rpx;
+  background: $color-bg-section;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.reviewConfirmBtn {
+  flex: 2;
+  height: 88rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
 }

@@ -3,23 +3,18 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { pendingReceiveOrders, receiveRecordList } from '@/data/receive';
+import { useAppState } from '@/store/app-context';
 import { Order, ReceiveRecord } from '@/types';
 
 const ReceivePage: React.FC = () => {
+  const { orders, receiveRecords } = useAppState();
   const [activeTab, setActiveTab] = useState<'pending' | 'done'>('pending');
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const pendingCount = pendingReceiveOrders.length;
-  const doneCount = receiveRecordList.length;
+  const pendingOrders = useMemo(() => {
+    return orders.filter(o => o.status === 'shipped' || o.status === 'submitted');
+  }, [orders]);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      Taro.stopPullDownRefresh();
-    }, 800);
-  };
+  const doneRecords = receiveRecords;
 
   const handleStartReceive = (order: Order) => {
     Taro.navigateTo({
@@ -50,11 +45,11 @@ const ReceivePage: React.FC = () => {
         <Text className={styles.headerSubtitle}>快速核对，高效入库</Text>
         <View className={styles.statRow}>
           <View className={styles.statItem}>
-            <Text className={styles.statValue}>{pendingCount}</Text>
+            <Text className={styles.statValue}>{pendingOrders.length}</Text>
             <Text className={styles.statLabel}>待验收</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statValue}>{doneCount}</Text>
+            <Text className={styles.statValue}>{doneRecords.length}</Text>
             <Text className={styles.statLabel}>已完成</Text>
           </View>
         </View>
@@ -78,14 +73,11 @@ const ReceivePage: React.FC = () => {
       <ScrollView
         className={styles.listContainer}
         scrollY
-        refresherEnabled
-        refresherTriggered={isRefreshing}
-        onRefresherRefresh={handleRefresh}
         style={{ height: 'calc(100vh - 420rpx)' }}
       >
         {activeTab === 'pending' ? (
-          pendingReceiveOrders.length > 0 ? (
-            pendingReceiveOrders.map((order) => (
+          pendingOrders.length > 0 ? (
+            pendingOrders.map(order => (
               <View key={order.id} className={styles.receiveCard}>
                 <View className={styles.cardHeader}>
                   <Text className={styles.orderNo}>{order.orderNo}</Text>
@@ -95,7 +87,7 @@ const ReceivePage: React.FC = () => {
                 </View>
                 <View className={styles.cardBody}>
                   <View className={styles.itemPreview}>
-                    {order.items.slice(0, 2).map((item) => (
+                    {order.items.slice(0, 2).map(item => (
                       <Text key={item.productId} className={styles.itemRow}>
                         {item.product.name} × {item.quantity} {item.product.unit}
                       </Text>
@@ -125,8 +117,8 @@ const ReceivePage: React.FC = () => {
             </View>
           )
         ) : (
-          receiveRecordList.length > 0 ? (
-            receiveRecordList.map((record) => (
+          doneRecords.length > 0 ? (
+            doneRecords.map(record => (
               <View
                 key={record.id}
                 className={styles.receiveCard}
@@ -145,7 +137,7 @@ const ReceivePage: React.FC = () => {
                 </View>
                 <View className={styles.cardBody}>
                   <View className={styles.itemPreview}>
-                    {record.items.slice(0, 2).map((item) => (
+                    {record.items.slice(0, 2).map(item => (
                       <Text key={item.productId} className={styles.itemRow}>
                         {item.product.name}：实收 {item.receivedQty}/{item.expectedQty}
                       </Text>

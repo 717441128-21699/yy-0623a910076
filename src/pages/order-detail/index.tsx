@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import { getOrderById } from '@/data/order';
+import { useAppState } from '@/store/app-context';
 import { Order } from '@/types';
 
 const statusMap = {
@@ -17,17 +17,11 @@ const statusMap = {
 const OrderDetailPage: React.FC = () => {
   const router = useRouter();
   const orderId = router.params.id as string;
+  const { orders, updateOrder } = useAppState();
 
-  const [order, setOrder] = useState<Order | null>(null);
-
-  useEffect(() => {
-    if (orderId) {
-      const o = getOrderById(orderId);
-      if (o) {
-        setOrder(o);
-      }
-    }
-  }, [orderId]);
+  const order = useMemo(() => {
+    return orders.find(o => o.id === orderId) || null;
+  }, [orders, orderId]);
 
   const getTimeline = () => {
     if (!order) return [];
@@ -58,6 +52,10 @@ const OrderDetailPage: React.FC = () => {
       content: '确定要提交此订货单给供应商吗？',
       success: (res) => {
         if (res.confirm) {
+          updateOrder(orderId, {
+            status: 'submitted',
+            submitTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
+          });
           Taro.showToast({ title: '提交成功', icon: 'success' });
         }
       },
@@ -71,6 +69,7 @@ const OrderDetailPage: React.FC = () => {
       confirmColor: '#f53f3f',
       success: (res) => {
         if (res.confirm) {
+          updateOrder(orderId, { status: 'cancelled' });
           Taro.showToast({ title: '已取消', icon: 'success' });
           setTimeout(() => Taro.navigateBack(), 1000);
         }

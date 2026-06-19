@@ -334,3 +334,99 @@
     color: $color-primary;
   }
 }
+
+.wrongShipmentWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: $color-tag-red;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+}
+
+.warningIcon {
+  font-size: $font-size-xl;
+  flex-shrink: 0;
+}
+
+.warningContent {
+  flex: 1;
+}
+
+.warningTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-stock-danger;
+  display: block;
+  margin-bottom: 6rpx;
+}
+
+.warningText {
+  font-size: $font-size-sm;
+  color: $color-stock-danger;
+  opacity: 0.9;
+}
+
+.orderMatchInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: $color-tag-green;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+}
+
+.matchIcon {
+  font-size: $font-size-lg;
+  flex-shrink: 0;
+}
+
+.matchContent {
+  flex: 1;
+}
+
+.matchText {
+  font-size: $font-size-sm;
+  color: $color-stock-ok;
+  font-weight: $font-weight-medium;
+}
+
+.receiveActions {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.abnormalTag {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+
+  &.shortage {
+    background: $color-tag-red;
+    color: $color-stock-danger;
+  }
+
+  &.expiring {
+    background: $color-tag-orange;
+    color: $color-stock-warning;
+  }
+}
+
+.tagIcon {
+  font-size: $font-size-md;
+}

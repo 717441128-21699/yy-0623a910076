@@ -189,3 +189,99 @@
   color: $color-text-white;
   font-weight: $font-weight-medium;
 }
+
+.warnBarWarning {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: $color-stock-warning;
+  padding: 6rpx 16rpx;
+  border-bottom-left-radius: $radius-md;
+}
+
+.warnTextWarning {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.stockBar {
+  margin-bottom: $spacing-md;
+  padding: $spacing-sm 0;
+}
+
+.barTrack {
+  position: relative;
+  height: 16rpx;
+  background: $color-bg-section;
+  border-radius: 8rpx;
+  overflow: visible;
+  margin-bottom: $spacing-sm;
+}
+
+.barFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 16rpx;
+  border-radius: 8rpx;
+  transition: width $transition-base;
+
+  &.ok {
+    background: $color-stock-ok;
+  }
+
+  &.warning {
+    background: $color-stock-warning;
+  }
+
+  &.danger {
+    background: $color-stock-danger;
+  }
+}
+
+.barSafetyLine {
+  position: absolute;
+  top: -4rpx;
+  bottom: -4rpx;
+  width: 4rpx;
+  background: $color-stock-ok;
+  border-radius: 2rpx;
+  z-index: 2;
+  opacity: 0.7;
+}
+
+.barWarnLine {
+  position: absolute;
+  top: -4rpx;
+  bottom: -4rpx;
+  width: 4rpx;
+  background: $color-stock-warning;
+  border-radius: 2rpx;
+  z-index: 2;
+  opacity: 0.7;
+}
+
+.barLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.barCurrent {
+  font-size: $font-size-xs;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.barSafety {
+  font-size: $font-size-xs;
+  color: $color-stock-ok;
+  font-weight: $font-weight-medium;
+}
+
+.barWarn {
+  font-size: $font-size-xs;
+  color: $color-stock-warning;
+  font-weight: $font-weight-medium;
+}

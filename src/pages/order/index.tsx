@@ -4,7 +4,7 @@ import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import OrderCard from '@/components/OrderCard';
-import { orderList } from '@/data/order';
+import { useAppState } from '@/store/app-context';
 import { Order } from '@/types';
 
 const tabs = [
@@ -17,23 +17,24 @@ const tabs = [
 ];
 
 const OrderPage: React.FC = () => {
+  const { orders } = useAppState();
   const [activeTab, setActiveTab] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const filteredOrders = useMemo(() => {
     if (activeTab === 'all') {
-      return orderList;
+      return orders;
     }
-    return orderList.filter((order) => order.status === activeTab);
-  }, [activeTab]);
+    return orders.filter(order => order.status === activeTab);
+  }, [activeTab, orders]);
 
   const stats = useMemo(() => {
     return {
-      total: orderList.length,
-      pending: orderList.filter((o) => o.status === 'pending').length,
-      shipped: orderList.filter((o) => o.status === 'shipped').length,
+      total: orders.length,
+      pending: orders.filter(o => o.status === 'pending').length,
+      shipped: orders.filter(o => o.status === 'shipped').length,
     };
-  }, []);
+  }, [orders]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -59,7 +60,7 @@ const OrderPage: React.FC = () => {
         <View>
           <Text className={styles.headerTitle}>订货单</Text>
         </View>
-        <Text className={styles.headerCount}>共 {orderList.length} 条</Text>
+        <Text className={styles.headerCount}>共 {orders.length} 条</Text>
       </View>
 
       <View className={styles.summaryBar}>
@@ -78,7 +79,7 @@ const OrderPage: React.FC = () => {
       </View>
 
       <ScrollView scrollX className={styles.tabs} enhanced showScrollbar={false}>
-        {tabs.map((tab) => (
+        {tabs.map(tab => (
           <Text
             key={tab.key}
             className={classnames(styles.tabItem, activeTab === tab.key && styles.active)}
@@ -98,7 +99,7 @@ const OrderPage: React.FC = () => {
         style={{ height: 'calc(100vh - 360rpx)' }}
       >
         {filteredOrders.length > 0 ? (
-          filteredOrders.map((order) => (
+          filteredOrders.map(order => (
             <OrderCard key={order.id} order={order} onClick={() => handleOrderClick(order)} />
           ))
         ) : (

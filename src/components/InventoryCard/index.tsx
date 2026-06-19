@@ -31,6 +31,13 @@ const InventoryCard: React.FC<InventoryCardProps> = ({ item, showScanBtn = false
     });
   };
 
+  const maxStock = Math.max(product.safetyStock * 2, quantity, product.warnStock);
+  const safetyPercent = Math.min((product.safetyStock / maxStock) * 100, 100);
+  const warnPercent = Math.min((product.warnStock / maxStock) * 100, 100);
+  const currentPercent = Math.min((quantity / maxStock) * 100, 100);
+
+  const deficit = product.warnStock - quantity;
+
   return (
     <View className={classnames(styles.card, styles[status])} onClick={handleCardClick}>
       <View className={styles.header}>
@@ -43,6 +50,28 @@ const InventoryCard: React.FC<InventoryCardProps> = ({ item, showScanBtn = false
           </View>
         </View>
         <Text className={styles.spec}>{product.spec}</Text>
+      </View>
+
+      <View className={styles.stockBar}>
+        <View className={styles.barTrack}>
+          <View
+            className={styles.barWarnLine}
+            style={{ left: `${warnPercent}%` }}
+          />
+          <View
+            className={styles.barSafetyLine}
+            style={{ left: `${safetyPercent}%` }}
+          />
+          <View
+            className={classnames(styles.barFill, styles[status])}
+            style={{ width: `${currentPercent}%` }}
+          />
+        </View>
+        <View className={styles.barLabels}>
+          <Text className={styles.barCurrent}>{quantity}{product.unit}</Text>
+          <Text className={styles.barSafety}>安全线 {product.safetyStock}</Text>
+          <Text className={styles.barWarn}>预警线 {product.warnStock}</Text>
+        </View>
       </View>
 
       <View className={styles.body}>
@@ -83,7 +112,17 @@ const InventoryCard: React.FC<InventoryCardProps> = ({ item, showScanBtn = false
 
       {status === 'danger' && (
         <View className={styles.warnBar}>
-          <Text className={styles.warnText}>低于安全线，建议立即补货</Text>
+          <Text className={styles.warnText}>
+            低于预警线，需补货 {deficit} {product.unit}
+          </Text>
+        </View>
+      )}
+
+      {status === 'warning' && (
+        <View className={styles.warnBarWarning}>
+          <Text className={styles.warnTextWarning}>
+            接近安全线，差 {deficit} {product.unit} 到预警线
+          </Text>
         </View>
       )}
     </View>
