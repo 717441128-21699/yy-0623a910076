@@ -1,0 +1,238 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 40rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: 40rpx $page-padding 60rpx;
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100rpx;
+    right: -80rpx;
+    width: 300rpx;
+    height: 300rpx;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -60rpx;
+    left: -40rpx;
+    width: 200rpx;
+    height: 200rpx;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
+  }
+}
+
+.greeting {
+  font-size: $font-size-md;
+  opacity: 0.9;
+  margin-bottom: 8rpx;
+}
+
+.title {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: 8rpx;
+}
+
+.date {
+  font-size: $font-size-sm;
+  opacity: 0.8;
+}
+
+.searchBar {
+  margin: -30rpx $page-padding 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 20rpx 24rpx;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  box-shadow: $shadow-card;
+  position: relative;
+  z-index: 10;
+}
+
+.searchIcon {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.statSection {
+  padding: 0 $page-padding;
+  margin-top: $spacing-lg;
+}
+
+.statRow {
+  display: flex;
+  gap: $spacing-md;
+  overflow-x: auto;
+  padding-bottom: 8rpx;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.statItem {
+  flex-shrink: 0;
+  width: 160rpx;
+}
+
+.quickActions {
+  padding: 0 $page-padding;
+  margin-top: $spacing-lg;
+}
+
+.actionGrid {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.actionCard {
+  flex: 1;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-md;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+}
+
+.actionIcon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+
+  &.scan {
+    background: linear-gradient(135deg, #e3fcf5 0%, #c6f7e7 100%);
+    color: $color-stock-ok;
+  }
+
+  &.order {
+    background: linear-gradient(135deg, #e8f3ff 0%, #c6e0ff 100%);
+    color: $color-primary;
+  }
+
+  &.receive {
+    background: linear-gradient(135deg, #fff7e8 0%, #ffebb8 100%);
+    color: $color-stock-warning;
+  }
+}
+
+.actionText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.categorySection {
+  padding: 0 $page-padding;
+  margin-top: $spacing-xl;
+}
+
+.categoryScroll {
+  white-space: nowrap;
+  padding-bottom: 8rpx;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.categoryItem {
+  display: inline-block;
+  padding: 16rpx 28rpx;
+  margin-right: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.listSection {
+  padding: 0 $page-padding;
+  margin-top: $spacing-md;
+}
+
+.sectionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitleText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.emptyState {
+  padding: 120rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}

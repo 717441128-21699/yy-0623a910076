@@ -1,0 +1,355 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 200rpx;
+}
+
+.filterBar {
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  display: flex;
+  gap: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.filterItem {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: 16rpx 0;
+  background: $color-bg-section;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary-bg;
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.filterIcon {
+  font-size: $font-size-md;
+}
+
+.categoryScroll {
+  white-space: nowrap;
+  padding: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.categoryTag {
+  display: inline-block;
+  padding: 14rpx 28rpx;
+  margin-right: $spacing-sm;
+  background: $color-bg-section;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.productList {
+  padding: $spacing-md $page-padding;
+}
+
+.productItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  display: flex;
+  gap: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.checkbox {
+  width: 40rpx;
+  height: 40rpx;
+  border: 3rpx solid $color-border;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  &.checked {
+    background: $color-primary;
+    border-color: $color-primary;
+  }
+}
+
+.checkIcon {
+  color: $color-text-white;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.productInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.productName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 8rpx;
+  @include text-ellipsis;
+}
+
+.productSpec {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 8rpx;
+}
+
+.productMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.brandTag {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  padding: 2rpx 12rpx;
+  background: $color-bg-section;
+  border-radius: $radius-xs;
+}
+
+.stockTag {
+  font-size: $font-size-xs;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-xs;
+
+  &.ok {
+    background: $color-tag-green;
+    color: $color-stock-ok;
+  }
+
+  &.warning {
+    background: $color-tag-orange;
+    color: $color-stock-warning;
+  }
+
+  &.danger {
+    background: $color-tag-red;
+    color: $color-stock-danger;
+  }
+}
+
+.productRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.price {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-stock-danger;
+}
+
+.qtyControl {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.qtyBtn {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: $radius-sm;
+  background: $color-bg-section;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    background: $color-primary-bg;
+    color: $color-primary;
+  }
+
+  &.disabled {
+    opacity: 0.4;
+  }
+}
+
+.qtyInput {
+  width: 80rpx;
+  text-align: center;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.bottomLeft {
+  flex: 1;
+}
+
+.totalText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 4rpx;
+}
+
+.totalAmount {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-stock-danger;
+}
+
+.selectAll {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.selectAllText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.submitBtn {
+  min-width: 200rpx;
+  height: 88rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  font-size: $font-size-md;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.remarkSection {
+  background: $color-bg-card;
+  margin: $spacing-md $page-padding;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.remarkTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.remarkInput {
+  width: 100%;
+  min-height: 120rpx;
+  padding: $spacing-md;
+  background: $color-bg-section;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  box-sizing: border-box;
+}
+
+.quickRemarks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.quickRemark {
+  padding: 12rpx 24rpx;
+  background: $color-bg-section;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary-bg;
+    color: $color-primary;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.emptyState {
+  padding: 120rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}

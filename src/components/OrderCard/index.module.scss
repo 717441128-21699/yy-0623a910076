@@ -1,0 +1,173 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  position: relative;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.orderNo {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.statusBadge {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+
+  &.pending {
+    background: $color-tag-orange;
+  }
+
+  &.submitted {
+    background: $color-tag-blue;
+  }
+
+  &.shipped {
+    background: $color-tag-blue;
+  }
+
+  &.received {
+    background: $color-tag-green;
+  }
+
+  &.cancelled {
+    background: $color-bg-hover;
+  }
+}
+
+.statusText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+
+  .pending & {
+    color: $color-stock-warning;
+  }
+
+  .submitted &,
+  .shipped & {
+    color: $color-primary;
+  }
+
+  .received & {
+    color: $color-stock-ok;
+  }
+
+  .cancelled & {
+    color: $color-text-tertiary;
+  }
+}
+
+.body {
+  padding: $spacing-md 0;
+  border-top: 1rpx solid $color-divider;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.itemName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+}
+
+.moreText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $spacing-md;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex: 1;
+}
+
+.supplier {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+  max-width: 280rpx;
+}
+
+.dept {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: $color-primary-bg;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  flex-shrink: 0;
+}
+
+.amountWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+  flex-shrink: 0;
+}
+
+.amountLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.amount {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-stock-danger;
+}
+
+.urgentTag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: $color-stock-danger;
+  padding: 6rpx 16rpx;
+  border-bottom-left-radius: $radius-md;
+}
+
+.urgentText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.timeRow {
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.timeText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

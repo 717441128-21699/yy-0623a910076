@@ -1,0 +1,316 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 140rpx;
+}
+
+.statusHeader {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: 48rpx $page-padding 80rpx;
+  color: $color-text-white;
+}
+
+.statusText {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.orderNo {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.infoCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  margin: -30rpx $page-padding $spacing-md;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  position: relative;
+  z-index: 10;
+}
+
+.infoRow {
+  display: flex;
+  margin-bottom: $spacing-md;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoLabel {
+  width: 180rpx;
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.sectionCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  margin: 0 $page-padding $spacing-md;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.sectionIcon {
+  font-size: $font-size-xl;
+}
+
+.itemCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.orderItem {
+  display: flex;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 6rpx;
+  @include text-ellipsis;
+}
+
+.itemSpec {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 8rpx;
+}
+
+.itemBrand {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  display: inline-block;
+  padding: 2rpx 12rpx;
+  background: $color-bg-section;
+  border-radius: $radius-xs;
+}
+
+.itemRight {
+  text-align: right;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.itemQty {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.itemPrice {
+  font-size: $font-size-sm;
+  color: $color-stock-danger;
+  font-weight: $font-weight-semibold;
+}
+
+.totalSection {
+  padding: $spacing-lg;
+  background: $color-bg-section;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.totalLabel {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.totalAmount {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-stock-danger;
+}
+
+.timeline {
+  padding: $spacing-lg;
+}
+
+.timelineItem {
+  display: flex;
+  padding-bottom: $spacing-lg;
+  position: relative;
+
+  &:last-child {
+    padding-bottom: 0;
+
+    .timelineLine {
+      display: none;
+    }
+  }
+}
+
+.timelineDot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: $color-primary;
+  margin-top: 6rpx;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+
+  &.done {
+    background: $color-stock-ok;
+  }
+
+  &.pending {
+    background: $color-text-disabled;
+  }
+}
+
+.timelineLine {
+  position: absolute;
+  left: 9rpx;
+  top: 28rpx;
+  bottom: 0;
+  width: 2rpx;
+  background: $color-divider;
+}
+
+.timelineContent {
+  flex: 1;
+}
+
+.timelineTitle {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 6rpx;
+
+  &.pending {
+    color: $color-text-tertiary;
+    font-weight: $font-weight-normal;
+  }
+}
+
+.timelineTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  display: flex;
+  gap: $spacing-md;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.secondaryBtn {
+  flex: 1;
+  height: 88rpx;
+  background: $color-bg-section;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.primaryBtn {
+  flex: 2;
+  height: 88rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.dangerBtn {
+  flex: 1;
+  height: 88rpx;
+  background: $color-tag-red;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-stock-danger;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.urgentTag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  background: $color-stock-danger;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  border-radius: $radius-xs;
+  margin-left: $spacing-sm;
+}

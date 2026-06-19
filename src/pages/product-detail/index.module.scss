@@ -1,0 +1,273 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 140rpx;
+}
+
+.productHeader {
+  background: $color-bg-card;
+  padding: $spacing-xl $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.productName {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.productSpec {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.statusBadge {
+  padding: 8rpx 20rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &.ok {
+    background: $color-tag-green;
+    color: $color-stock-ok;
+  }
+
+  &.warning {
+    background: $color-tag-orange;
+    color: $color-stock-warning;
+  }
+
+  &.danger {
+    background: $color-tag-red;
+    color: $color-stock-danger;
+  }
+}
+
+.categoryTag {
+  padding: 8rpx 20rpx;
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+}
+
+.stockCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin: 0 $page-padding $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.cardTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.cardTitleIcon {
+  font-size: $font-size-xl;
+}
+
+.stockGrid {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.stockItem {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-md 0;
+  background: $color-bg-section;
+  border-radius: $radius-md;
+}
+
+.stockNumber {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+
+  &.ok {
+    color: $color-stock-ok;
+  }
+
+  &.warning {
+    color: $color-stock-warning;
+  }
+
+  &.danger {
+    color: $color-stock-danger;
+  }
+}
+
+.stockUnit {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.stockLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 6rpx;
+}
+
+.progressBar {
+  height: 16rpx;
+  background: $color-bg-section;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-sm;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: $radius-round;
+  transition: width $transition-base;
+
+  &.ok {
+    background: linear-gradient(90deg, $color-stock-ok 0%, #23c342 100%);
+  }
+
+  &.warning {
+    background: linear-gradient(90deg, $color-stock-warning 0%, #ff9a2e 100%);
+  }
+
+  &.danger {
+    background: linear-gradient(90deg, $color-stock-danger 0%, #ff6b6b 100%);
+  }
+}
+
+.safetyLine {
+  display: flex;
+  justify-content: space-between;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.infoCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  margin: 0 $page-padding $spacing-md;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.infoCardHeader {
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.infoCardTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.infoRow {
+  display: flex;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.infoLabel {
+  width: 180rpx;
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.priceValue {
+  color: $color-stock-danger;
+  font-weight: $font-weight-semibold;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  display: flex;
+  gap: $spacing-md;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.secondaryBtn {
+  flex: 1;
+  height: 88rpx;
+  background: $color-primary-bg;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  font-size: $font-size-md;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+.primaryBtn {
+  flex: 2;
+  height: 88rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  font-size: $font-size-md;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.btnIcon {
+  font-size: $font-size-lg;
+}

@@ -1,0 +1,237 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: 48rpx $page-padding 60rpx;
+  color: $color-text-white;
+}
+
+.headerTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.headerSubtitle {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.statRow {
+  display: flex;
+  gap: $spacing-lg;
+  margin-top: $spacing-lg;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.statValue {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  opacity: 0.8;
+}
+
+.tabs {
+  background: $color-bg-card;
+  margin: -24rpx $page-padding 0;
+  border-radius: $radius-lg;
+  display: flex;
+  padding: 8rpx;
+  box-shadow: $shadow-card;
+  position: relative;
+  z-index: 10;
+}
+
+.tabItem {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.listContainer {
+  padding: $spacing-md $page-padding;
+}
+
+.receiveCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.orderNo {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.statusBadge {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+
+  &.pending {
+    background: $color-tag-orange;
+    color: $color-stock-warning;
+  }
+
+  &.partial {
+    background: $color-tag-blue;
+    color: $color-primary;
+  }
+
+  &.complete {
+    background: $color-tag-green;
+    color: $color-stock-ok;
+  }
+}
+
+.cardBody {
+  padding: $spacing-md 0;
+  border-top: 1rpx solid $color-divider;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.itemPreview {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.itemRow {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $spacing-md;
+}
+
+.supplier {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+  flex: 1;
+}
+
+.expectedDate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.actionBtn {
+  padding: 14rpx 32rpx;
+  background: $color-primary;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.96);
+  }
+}
+
+.abnormalTag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: $color-tag-red;
+  color: $color-stock-danger;
+  font-size: $font-size-xs;
+  border-radius: $radius-xs;
+  margin-left: $spacing-sm;
+}
+
+.emptyState {
+  padding: 160rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.emptyIcon {
+  font-size: 160rpx;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.scanBtn {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 140rpx;
+  padding: 24rpx 60rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  box-shadow: 0 8rpx 24rpx rgba(0, 168, 204, 0.4);
+  z-index: 100;
+  transition: all $transition-base;
+
+  &:active {
+    transform: translateX(-50%) scale(0.96);
+  }
+}
+
+.scanBtnIcon {
+  font-size: $font-size-xl;
+}
+
+.scanBtnText {
+  font-size: $font-size-lg;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}

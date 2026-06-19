@@ -1,0 +1,85 @@
+@use '@/styles/variables.scss' as *;
+
+.statCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  min-width: 0;
+  flex: 1;
+
+  &.clickable {
+    transition: all $transition-base;
+
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+  }
+
+  &.default {
+    .value {
+      color: $color-text-primary;
+    }
+  }
+
+  &.primary {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+
+    .title,
+    .value,
+    .unit,
+    .subText {
+      color: $color-text-white;
+    }
+  }
+
+  &.success {
+    .value {
+      color: $color-stock-ok;
+    }
+  }
+
+  &.warning {
+    .value {
+      color: $color-stock-warning;
+    }
+  }
+
+  &.danger {
+    .value {
+      color: $color-stock-danger;
+    }
+  }
+}
+
+.title {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-normal;
+}
+
+.valueWrap {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-xs;
+}
+
+.value {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.unit {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.subText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

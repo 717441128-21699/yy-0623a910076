@@ -1,0 +1,148 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.header {
+  background: $color-bg-card;
+  padding: $spacing-lg $page-padding;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headerTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.headerCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.tabs {
+  background: $color-bg-card;
+  padding: 0 $page-spacing;
+  white-space: nowrap;
+  border-bottom: 1rpx solid $color-divider;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tabItem {
+  display: inline-block;
+  padding: 24rpx 28rpx;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  position: relative;
+  transition: all $transition-base;
+
+  &.active {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 48rpx;
+      height: 6rpx;
+      background: $color-primary;
+      border-radius: 3rpx;
+    }
+  }
+}
+
+.listContainer {
+  padding: $spacing-md $page-padding;
+}
+
+.emptyState {
+  padding: 160rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.emptyIcon {
+  font-size: 160rpx;
+  opacity: 0.3;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.fab {
+  position: fixed;
+  right: 40rpx;
+  bottom: 140rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 168, 204, 0.4);
+  z-index: 100;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.fabIcon {
+  font-size: 44rpx;
+}
+
+.fabText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.summaryBar {
+  margin: $spacing-md $page-padding 0;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-lg;
+  display: flex;
+  justify-content: space-around;
+  box-shadow: $shadow-card;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.summaryValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.summaryLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
