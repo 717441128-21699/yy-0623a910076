@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, Input } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useAppState } from '@/store/app-context';
@@ -24,7 +24,16 @@ const ReceiveDetailPage: React.FC = () => {
   const orderId = router.params.orderId as string;
   const recordId = router.params.id as string;
 
-  const { orders, receiveRecords, addReceiveRecord, updateOrder } = useAppState();
+  const {
+    orders,
+    receiveRecords,
+    currentReceiveSession,
+    addReceiveRecord,
+    updateOrder,
+    startReceiveSession,
+    updateReceiveSessionItem,
+    clearReceiveSession,
+  } = useAppState();
 
   const order = useMemo(() => {
     if (orderId) return orders.find(o => o.id === orderId) || null;
@@ -43,55 +52,93 @@ const ReceiveDetailPage: React.FC = () => {
   const isViewMode = !!existingRecord;
 
   const [items, setItems] = useState<ReceiveItemState[]>([]);
+  const [wrongItems, setWrongItems] = useState<ReceiveItemState[]>([]);
+
+  const syncFromSession = () => {
+    if (isViewMode || !order || !currentReceiveSession) return;
+    if (currentReceiveSession.orderId !== order.id) return;
+
+    setItems(currentReceiveSession.items.map(i => ({ ...i })));
+    setWrongItems(currentReceiveSession.wrongItems.map(i => ({ ...i })));
+  };
 
   useEffect(() => {
     if (existingRecord) {
-      setItems(existingRecord.items.map(item => ({ ...item })));
+      const allItems = existingRecord.items;
+      const normalItems = allItems.filter(i => i.status !== 'wrong');
+      const wrongItemsList = allItems.filter(i => i.status === 'wrong');
+      setItems(normalItems.map(item => ({ ...item })));
+      setWrongItems(wrongItemsList.map(item => ({ ...item })));
     } else if (order) {
-      const initialItems: ReceiveItemState[] = order.items.map(item => ({
-        productId: item.productId,
-        product: item.product,
-        expectedQty: item.quantity,
-        receivedQty: 0,
-        status: 'pending' as const,
-      }));
-      setItems(initialItems);
+      if (currentReceiveSession && currentReceiveSession.orderId === order.id) {
+        syncFromSession();
+      } else {
+        const initialItems: ReceiveItemState[] = order.items.map(item => ({
+          productId: item.productId,
+          product: item.product,
+          expectedQty: item.quantity,
+          receivedQty: 0,
+          status: 'pending' as const,
+        }));
+        setItems(initialItems);
+        setWrongItems([]);
+        startReceiveSession(order.id, initialItems);
+      }
     }
   }, [order, existingRecord]);
 
-  const summary = useMemo(() => {
-    const totalExpected = items.reduce((sum, item) => sum + item.expectedQty, 0);
-    const totalReceived = items.reduce((sum, item) => sum + item.receivedQty, 0);
-    const abnormalCount = items.filter(item => item.status !== 'pending' && item.status !== 'ok').length;
-    const completedCount = items.filter(item => item.status !== 'pending').length;
-    return { totalExpected, totalReceived, abnormalCount, completedCount };
-  }, [items]);
+  useDidShow(() => {
+    syncFromSession();
+  });
 
-  const handleQtyChange = (index: number, delta: number) => {
+  const summary = useMemo(() => {
+    const allItems = [...items, ...wrongItems];
+    const totalExpected = items.reduce((sum, item) => sum + item.expectedQty, 0);
+    const totalReceived = allItems.reduce((sum, item) => sum + item.receivedQty, 0);
+    const abnormalCount = allItems.filter(item => item.status !== 'pending' && item.status !== 'ok').length;
+    const completedCount = allItems.filter(item => item.status !== 'pending').length;
+    return { totalExpected, totalReceived, abnormalCount, completedCount, totalItems: allItems.length };
+  }, [items, wrongItems]);
+
+  const updateLocalAndSession = (index: number, field: 'items' | 'wrongItems', updates: Partial<ReceiveItemState>) => {
     if (isViewMode) return;
-    const newItems = [...items];
-    const item = { ...newItems[index] };
+
+    const targetArray = field === 'items' ? [...items] : [...wrongItems];
+    targetArray[index] = { ...targetArray[index], ...updates };
+
+    if (field === 'items') {
+      setItems(targetArray);
+    } else {
+      setWrongItems(targetArray);
+    }
+
+    updateReceiveSessionItem(targetArray[index].productId, updates);
+  };
+
+  const handleQtyChange = (index: number, delta: number, field: 'items' | 'wrongItems' = 'items') => {
+    if (isViewMode) return;
+    const targetArray = field === 'items' ? items : wrongItems;
+    const item = { ...targetArray[index] };
     item.receivedQty = Math.max(0, item.receivedQty + delta);
 
     if (item.receivedQty === 0) {
       item.status = 'pending';
+    } else if (field === 'wrongItems') {
+      item.status = 'wrong';
     } else if (item.receivedQty === item.expectedQty) {
-      item.status = 'ok';
+      if (item.status !== 'expiring') item.status = 'ok';
     } else if (item.receivedQty < item.expectedQty) {
-      item.status = 'shortage';
+      if (item.status !== 'expiring' && item.status !== 'wrong') item.status = 'shortage';
     } else {
-      item.status = 'excess';
+      if (item.status !== 'expiring' && item.status !== 'wrong') item.status = 'excess';
     }
 
-    newItems[index] = item;
-    setItems(newItems);
+    updateLocalAndSession(index, field, { receivedQty: item.receivedQty, status: item.status });
   };
 
-  const handleSetStatus = (index: number, status: ReceiveItem['status']) => {
+  const handleSetStatus = (index: number, status: ReceiveItem['status'], field: 'items' | 'wrongItems' = 'items') => {
     if (isViewMode) return;
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], status };
-    setItems(newItems);
+    updateLocalAndSession(index, field, { status });
   };
 
   const handleScan = () => {
@@ -109,6 +156,13 @@ const ReceiveDetailPage: React.FC = () => {
       status: 'ok' as const,
     }));
     setItems(newItems);
+
+    if (currentReceiveSession && currentReceiveSession.orderId === order!.id) {
+      newItems.forEach(item => {
+        updateReceiveSessionItem(item.productId, { receivedQty: item.receivedQty, status: item.status });
+      });
+    }
+
     Taro.showToast({ title: '已全部标记为已收货', icon: 'success' });
   };
 
@@ -119,9 +173,16 @@ const ReceiveDetailPage: React.FC = () => {
     }
 
     const hasAbnormal = summary.abnormalCount > 0;
-    const content = hasAbnormal
-      ? `验收完成，共${items.length}项商品，其中${summary.abnormalCount}项存在异常，是否提交验收记录？`
-      : `验收完成，共${items.length}项商品全部正常，是否提交验收记录？`;
+    const wrongItemCount = wrongItems.length;
+    let content = '';
+
+    if (wrongItemCount > 0) {
+      content = `验收完成，共${items.length}项订单项 + ${wrongItemCount}项错发商品，其中${summary.abnormalCount}项存在异常，是否提交验收记录？`;
+    } else if (hasAbnormal) {
+      content = `验收完成，共${items.length}项商品，其中${summary.abnormalCount}项存在异常，是否提交验收记录？`;
+    } else {
+      content = `验收完成，共${items.length}项商品全部正常，是否提交验收记录？`;
+    }
 
     Taro.showModal({
       title: '确认提交',
@@ -131,15 +192,14 @@ const ReceiveDetailPage: React.FC = () => {
           const now = new Date();
           const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
-          const recordStatus = summary.abnormalCount > 0
-            ? (items.every(i => i.status === 'ok') ? 'complete' : 'partial')
-            : 'complete';
+          const allItems = [...items.filter(i => i.status !== 'pending'), ...wrongItems];
+          const recordStatus = allItems.every(i => i.status === 'ok') ? 'complete' : 'partial';
 
           const newRecord = {
             id: `r_new_${Date.now()}`,
             orderId: order!.id,
             orderNo: order!.orderNo,
-            items: items.filter(i => i.status !== 'pending'),
+            items: allItems,
             totalExpected: summary.totalExpected,
             totalReceived: summary.totalReceived,
             status: recordStatus as 'pending' | 'partial' | 'complete',
@@ -152,6 +212,7 @@ const ReceiveDetailPage: React.FC = () => {
             status: 'received',
             receiveTime: timeStr,
           });
+          clearReceiveSession();
 
           Taro.showToast({ title: '验收记录已生成', icon: 'success' });
           setTimeout(() => {
@@ -174,6 +235,11 @@ const ReceiveDetailPage: React.FC = () => {
       </View>
     );
   }
+
+  const allItemsToRender = [
+    ...items.map(item => ({ ...item, field: 'items' as const })),
+    ...wrongItems.map(item => ({ ...item, field: 'wrongItems' as const })),
+  ];
 
   return (
     <View className={styles.page}>
@@ -219,109 +285,134 @@ const ReceiveDetailPage: React.FC = () => {
               <Text className={styles.sectionIcon}>📦</Text>
               验收清单
             </Text>
-            <Text className={styles.itemCount}>共 {items.length} 项</Text>
+            <Text className={styles.itemCount}>共 {summary.totalItems} 项</Text>
           </View>
 
-          {items.map((item, index) => (
-            <View
-              key={item.productId}
-              className={classnames(styles.receiveItem, item.status !== 'ok' && item.status !== 'pending' && styles.abnormal)}
-            >
-              <View className={styles.itemHeader}>
-                <View className={styles.itemInfo}>
-                  <Text className={styles.itemName}>{item.product.name}</Text>
-                  <Text className={styles.itemSpec}>
-                    {item.product.spec} · {item.product.brand}
-                  </Text>
-                </View>
-                <View className={classnames(styles.itemStatus, styles[item.status])}>
-                  {statusTextMap[item.status]}
-                </View>
-              </View>
+          {allItemsToRender.map((item, index) => {
+            const arrayIndex = item.field === 'items'
+              ? items.findIndex(i => i.productId === item.productId)
+              : wrongItems.findIndex(i => i.productId === item.productId);
 
-              <View className={styles.qtyRow}>
-                <Text className={styles.qtyLabel}>应收数量</Text>
-                <Text className={styles.qtyValue}>
-                  {item.expectedQty} {item.product.unit}
-                </Text>
-              </View>
+            return (
+              <View
+                key={`${item.field}-${item.productId}`}
+                className={classnames(
+                  styles.receiveItem,
+                  item.status !== 'ok' && item.status !== 'pending' && styles.abnormal
+                )}
+              >
+                {item.field === 'wrongItems' && (
+                  <View className={styles.wrongItemBanner}>
+                    <Text className={styles.wrongItemText}>⚠️ 错发商品（不在订货单中）</Text>
+                  </View>
+                )}
 
-              {!isViewMode ? (
-                <View className={styles.qtyRow}>
-                  <Text className={styles.qtyLabel}>实收数量</Text>
-                  <View className={styles.qtyControl}>
-                    <View
-                      className={styles.qtyBtn}
-                      onClick={() => handleQtyChange(index, -1)}
-                    >
-                      −
-                    </View>
-                    <Input
-                      className={styles.qtyInput}
-                      type="number"
-                      value={String(item.receivedQty)}
-                      onInput={(e) => {
-                        const val = parseInt(e.detail.value) || 0;
-                        const newItems = [...items];
-                        newItems[index] = {
-                          ...newItems[index],
-                          receivedQty: val,
-                          status: val === 0 ? 'pending' : val === item.expectedQty ? 'ok' : val < item.expectedQty ? 'shortage' : 'excess',
-                        };
-                        setItems(newItems);
-                      }}
-                    />
-                    <View
-                      className={styles.qtyBtn}
-                      onClick={() => handleQtyChange(index, 1)}
-                    >
-                      +
-                    </View>
+                <View className={styles.itemHeader}>
+                  <View className={styles.itemInfo}>
+                    <Text className={styles.itemName}>{item.product.name}</Text>
+                    <Text className={styles.itemSpec}>
+                      {item.product.spec} · {item.product.brand}
+                    </Text>
+                  </View>
+                  <View className={classnames(styles.itemStatus, styles[item.status])}>
+                    {statusTextMap[item.status]}
                   </View>
                 </View>
-              ) : (
-                <View className={styles.qtyRow}>
-                  <Text className={styles.qtyLabel}>实收数量</Text>
-                  <Text
-                    className={classnames(
-                      styles.qtyValue,
-                      item.status !== 'ok' && item.status !== 'pending' && { color: '#f53f3f' }
+
+                {item.field === 'items' && (
+                  <View className={styles.qtyRow}>
+                    <Text className={styles.qtyLabel}>应收数量</Text>
+                    <Text className={styles.qtyValue}>
+                      {item.expectedQty} {item.product.unit}
+                    </Text>
+                  </View>
+                )}
+
+                {!isViewMode ? (
+                  <View className={styles.qtyRow}>
+                    <Text className={styles.qtyLabel}>实收数量</Text>
+                    <View className={styles.qtyControl}>
+                      <View
+                        className={styles.qtyBtn}
+                        onClick={() => handleQtyChange(arrayIndex, -1, item.field)}
+                      >
+                        −
+                      </View>
+                      <Input
+                        className={styles.qtyInput}
+                        type="number"
+                        value={String(item.receivedQty)}
+                        onInput={(e) => {
+                          const val = parseInt(e.detail.value) || 0;
+                          const targetArray = item.field === 'items' ? items : wrongItems;
+                          const currentItem = targetArray[arrayIndex];
+                          let newStatus: ReceiveItem['status'] = 'pending';
+
+                          if (val > 0) {
+                            if (item.field === 'wrongItems') {
+                              newStatus = 'wrong';
+                            } else if (val === currentItem.expectedQty) {
+                              newStatus = currentItem.status === 'expiring' ? 'expiring' : 'ok';
+                            } else if (val < currentItem.expectedQty) {
+                              newStatus = currentItem.status === 'expiring' || currentItem.status === 'wrong'
+                                ? currentItem.status : 'shortage';
+                            } else {
+                              newStatus = currentItem.status === 'expiring' || currentItem.status === 'wrong'
+                                ? currentItem.status : 'excess';
+                            }
+                          }
+
+                          updateLocalAndSession(arrayIndex, item.field, { receivedQty: val, status: newStatus });
+                        }}
+                      />
+                      <View
+                        className={styles.qtyBtn}
+                        onClick={() => handleQtyChange(arrayIndex, 1, item.field)}
+                      >
+                        +
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View className={styles.qtyRow}>
+                    <Text className={styles.qtyLabel}>实收数量</Text>
+                    <Text
+                      className={classnames(
+                        styles.qtyValue,
+                        item.status !== 'ok' && item.status !== 'pending' && { color: '#f53f3f' }
+                      )}
+                    >
+                      {item.receivedQty} {item.product.unit}
+                    </Text>
+                  </View>
+                )}
+
+                {!isViewMode && (
+                  <View className={styles.itemFooter}>
+                    <Text className={styles.batchInfo}>
+                      批号：{item.batchNo || '未录入'} · 有效期：{item.expiryDate || '未录入'}
+                    </Text>
+                    {item.field === 'items' && (
+                      <View className={styles.abnormalReasons}>
+                        <Text
+                          className={classnames(styles.reasonTag, item.status === 'shortage' && styles.active)}
+                          onClick={() => handleSetStatus(arrayIndex, 'shortage', item.field)}
+                        >
+                          缺货
+                        </Text>
+                        <Text
+                          className={classnames(styles.reasonTag, item.status === 'expiring' && styles.active)}
+                          onClick={() => handleSetStatus(arrayIndex, 'expiring', item.field)}
+                        >
+                          临期
+                        </Text>
+                      </View>
                     )}
-                  >
-                    {item.receivedQty} {item.product.unit}
-                  </Text>
-                </View>
-              )}
-
-              {!isViewMode && (
-                <View className={styles.itemFooter}>
-                  <Text className={styles.batchInfo}>
-                    批号：{item.batchNo || '未录入'} · 有效期：{item.expiryDate || '未录入'}
-                  </Text>
-                  <View className={styles.abnormalReasons}>
-                    <Text
-                      className={classnames(styles.reasonTag, item.status === 'shortage' && styles.active)}
-                      onClick={() => handleSetStatus(index, 'shortage')}
-                    >
-                      缺货
-                    </Text>
-                    <Text
-                      className={classnames(styles.reasonTag, item.status === 'wrong' && styles.active)}
-                      onClick={() => handleSetStatus(index, 'wrong')}
-                    >
-                      错发
-                    </Text>
-                    <Text
-                      className={classnames(styles.reasonTag, item.status === 'expiring' && styles.active)}
-                      onClick={() => handleSetStatus(index, 'expiring')}
-                    >
-                      临期
-                    </Text>
                   </View>
-                </View>
-              )}
-            </View>
-          ))}
+                )}
+              </View>
+            );
+          })}
         </View>
 
         <View style={{ height: '40rpx' }} />

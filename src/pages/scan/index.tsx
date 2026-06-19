@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Input } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { getProductByBarcode } from '@/data/product';
 import { getInventoryByBarcode, getInventoryByProductId } from '@/data/inventory';
-import { Product, InventoryItem } from '@/types';
+import { Product, InventoryItem, ReceiveItem } from '@/types';
 import { useAppState } from '@/store/app-context';
 
 interface ScanCheckResult {
   inOrder: boolean;
   orderItemId?: string;
   orderQty?: number;
+  currentReceivedQty?: number;
   matchStatus: 'match' | 'wrong' | 'shortage' | 'expiring';
 }
 
@@ -21,7 +22,13 @@ const ScanPage: React.FC = () => {
   const productId = router.params.productId;
   const orderId = router.params.orderId as string;
 
-  const { orders } = useAppState();
+  const {
+    orders,
+    currentReceiveSession,
+    incrementReceiveQty,
+    updateReceiveSessionItem,
+    addWrongItemToSession,
+  } = useAppState();
 
   const currentOrder = useMemo(() => {
     if (!orderId || mode !== 'receive') return null;
@@ -34,6 +41,77 @@ const ScanPage: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [scanCheckResult, setScanCheckResult] = useState<ScanCheckResult | null>(null);
 
+  const getCurrentReceivedQty = (productId: string): number => {
+    if (!currentReceiveSession) return 0;
+    const item = currentReceiveSession.items.find(i => i.productId === productId);
+    return item?.receivedQty || 0;
+  };
+
+  const scanAndProcess = (code: string) => {
+    const product = getProductByBarcode(code.trim());
+    const inv = getInventoryByBarcode(code.trim());
+
+    setScannedProduct(product || null);
+    setInventory(inv || null);
+    setHasSearched(true);
+
+    if (product) {
+      Taro.vibrateShort({ type: 'medium' });
+
+      if (mode === 'receive' && currentReceiveSession) {
+        const orderItem = currentReceiveSession.items.find(i => i.productId === product.id);
+
+        if (orderItem) {
+          incrementReceiveQty(product.id, 1);
+          const newQty = getCurrentReceivedQty(product.id) + 1;
+
+          let matchStatus: ScanCheckResult['matchStatus'] = 'match';
+          if (newQty < orderItem.expectedQty) {
+            if (orderItem.status === 'expiring') matchStatus = 'expiring';
+            else if (orderItem.status === 'shortage') matchStatus = 'shortage';
+          }
+
+          setScanCheckResult({
+            inOrder: true,
+            orderItemId: product.id,
+            orderQty: orderItem.expectedQty,
+            currentReceivedQty: newQty,
+            matchStatus,
+          });
+
+          Taro.showToast({
+            title: `已登记 +1，累计 ${newQty}`,
+            icon: 'none',
+            duration: 1500,
+          });
+        } else {
+          const wrongItem: ReceiveItem = {
+            productId: product.id,
+            product: product,
+            expectedQty: 0,
+            receivedQty: 1,
+            status: 'wrong',
+          };
+          addWrongItemToSession(wrongItem);
+
+          Taro.showModal({
+            title: '⚠️ 错发提醒',
+            content: `商品「${product.name}」不在订货单中，已作为异常项登记到验收清单！`,
+            showCancel: false,
+            confirmText: '知道了',
+          });
+
+          setScanCheckResult({
+            inOrder: false,
+            matchStatus: 'wrong',
+          });
+        }
+      }
+    } else {
+      setScanCheckResult(null);
+    }
+  };
+
   useEffect(() => {
     if (productId) {
       const inv = getInventoryByBarcode(barcode) || getInventoryByProductId(productId);
@@ -45,57 +123,12 @@ const ScanPage: React.FC = () => {
     }
   }, [productId]);
 
-  const checkAgainstOrder = (product: Product): ScanCheckResult => {
-    if (!currentOrder) {
-      return { inOrder: false, matchStatus: 'match' };
-    }
-
-    const orderItem = currentOrder.items.find(item => item.productId === product.id);
-
-    if (!orderItem) {
-      Taro.showModal({
-        title: '⚠️ 错发提醒',
-        content: `商品「${product.name}」不在订货单 ${currentOrder.orderNo} 中，可能为供应商错发！`,
-        showCancel: false,
-        confirmText: '知道了',
-      });
-      return { inOrder: false, matchStatus: 'wrong' };
-    }
-
-    const now = new Date();
-    const threeMonthsLater = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-
-    return {
-      inOrder: true,
-      orderItemId: orderItem.productId,
-      orderQty: orderItem.quantity,
-      matchStatus: 'match',
-    };
-  };
-
   const handleSearch = () => {
     if (!barcode.trim()) {
       Taro.showToast({ title: '请输入条码', icon: 'none' });
       return;
     }
-
-    const product = getProductByBarcode(barcode.trim());
-    const inv = getInventoryByBarcode(barcode.trim());
-
-    setScannedProduct(product || null);
-    setInventory(inv || null);
-    setHasSearched(true);
-
-    if (product) {
-      Taro.vibrateShort({ type: 'medium' });
-
-      if (mode === 'receive' && currentOrder) {
-        const checkResult = checkAgainstOrder(product);
-        setScanCheckResult(checkResult);
-      }
-    } else {
-      setScanCheckResult(null);
-    }
+    scanAndProcess(barcode.trim());
   };
 
   const getInventoryStatus = () => {
@@ -108,7 +141,9 @@ const ScanPage: React.FC = () => {
     if (!hasSearched) return '未扫描';
     if (!scannedProduct) return '未找到商品';
     if (mode === 'receive' && scanCheckResult) {
-      if (!scanCheckResult.inOrder) return '不在订单中';
+      if (!scanCheckResult.inOrder) return '错发商品';
+      if (scanCheckResult.matchStatus === 'expiring') return '已标记临期';
+      if (scanCheckResult.matchStatus === 'shortage') return '已标记缺货';
       return '订单匹配';
     }
     switch (inventory?.status) {
@@ -122,33 +157,51 @@ const ScanPage: React.FC = () => {
   const handleConfirmCount = () => {
     if (!scannedProduct) return;
 
-    if (mode === 'receive' && scanCheckResult && !scanCheckResult.inOrder) {
-      Taro.showModal({
-        title: '确认收货',
-        content: `此商品不在订单中，仍要确认收货吗？`,
-        success: (res) => {
-          if (res.confirm) {
-            Taro.showToast({ title: '已标记', icon: 'success' });
-            setTimeout(() => Taro.navigateBack(), 1000);
-          }
-        },
-      });
+    if (mode === 'receive') {
+      Taro.showToast({ title: '已登记到验收清单', icon: 'success' });
+      setTimeout(() => {
+        Taro.navigateBack();
+      }, 800);
       return;
     }
 
-    Taro.showToast({ title: mode === 'receive' ? '验收成功' : '盘点成功', icon: 'success' });
+    Taro.showToast({ title: '盘点成功', icon: 'success' });
     setTimeout(() => {
       Taro.navigateBack();
     }, 1000);
   };
 
   const handleMarkShortage = () => {
-    if (!scannedProduct) return;
+    if (!scannedProduct || mode !== 'receive') return;
+
+    updateReceiveSessionItem(scannedProduct.id, {
+      status: 'shortage',
+    });
+
+    if (scanCheckResult) {
+      setScanCheckResult({
+        ...scanCheckResult,
+        matchStatus: 'shortage',
+      });
+    }
+
     Taro.showToast({ title: '已标记缺货', icon: 'none' });
   };
 
   const handleMarkExpiring = () => {
-    if (!scannedProduct) return;
+    if (!scannedProduct || mode !== 'receive') return;
+
+    updateReceiveSessionItem(scannedProduct.id, {
+      status: 'expiring',
+    });
+
+    if (scanCheckResult) {
+      setScanCheckResult({
+        ...scanCheckResult,
+        matchStatus: 'expiring',
+      });
+    }
+
     Taro.showToast({ title: '已标记临期', icon: 'none' });
   };
 
@@ -173,25 +226,20 @@ const ScanPage: React.FC = () => {
 
   const handleQuickScan = (code: string) => {
     setBarcode(code);
-    const product = getProductByBarcode(code);
-    const inv = getInventoryByBarcode(code);
-    setScannedProduct(product || null);
-    setInventory(inv || null);
-    setHasSearched(true);
-
-    if (product && mode === 'receive' && currentOrder) {
-      const checkResult = checkAgainstOrder(product);
-      setScanCheckResult(checkResult);
-    } else {
-      setScanCheckResult(null);
-    }
-
-    Taro.vibrateShort({ type: 'medium' });
+    scanAndProcess(code);
   };
 
   const statusClass = mode === 'receive' && scanCheckResult
-    ? (scanCheckResult.inOrder ? 'ok' : 'danger')
+    ? (scanCheckResult.inOrder
+        ? (scanCheckResult.matchStatus === 'expiring' ? 'warning' : scanCheckResult.matchStatus === 'shortage' ? 'danger' : 'ok')
+        : 'danger')
     : getInventoryStatus();
+
+  const sessionItem = useMemo(() => {
+    if (!currentReceiveSession || !scannedProduct) return null;
+    return currentReceiveSession.items.find(i => i.productId === scannedProduct.id)
+      || currentReceiveSession.wrongItems.find(i => i.productId === scannedProduct.id);
+  }, [currentReceiveSession, scannedProduct]);
 
   return (
     <View className={styles.page}>
@@ -205,6 +253,11 @@ const ScanPage: React.FC = () => {
             ? (currentOrder ? `正在核对订货单 ${currentOrder.orderNo}` : '请扫描商品包装条码进行验收')
             : '将条码放入框内，自动识别'}
         </Text>
+        {mode === 'receive' && currentReceiveSession && (
+          <View className={styles.sessionHint}>
+            已登记 {currentReceiveSession.items.filter(i => i.receivedQty > 0).length + currentReceiveSession.wrongItems.length} 项
+          </View>
+        )}
       </View>
 
       <View className={styles.resultPanel}>
@@ -252,9 +305,9 @@ const ScanPage: React.FC = () => {
               <View className={styles.wrongShipmentWarning}>
                 <Text className={styles.warningIcon}>⚠️</Text>
                 <View className={styles.warningContent}>
-                  <Text className={styles.warningTitle}>错发提醒</Text>
+                  <Text className={styles.warningTitle}>错发商品已登记</Text>
                   <Text className={styles.warningText}>
-                    此商品不在当前订货单中，可能是供应商错发，请核实！
+                    此商品不在当前订货单中，已作为异常项添加到验收清单
                   </Text>
                 </View>
               </View>
@@ -265,8 +318,13 @@ const ScanPage: React.FC = () => {
                 <Text className={styles.matchIcon}>✅</Text>
                 <View className={styles.matchContent}>
                   <Text className={styles.matchText}>
-                    订单匹配 · 订货数量：{scanCheckResult.orderQty} {scannedProduct.unit}
+                    订单匹配 · 订货：{scanCheckResult.orderQty} {scannedProduct.unit}
                   </Text>
+                  {sessionItem && (
+                    <Text className={styles.receivedQtyText}>
+                      已验收：<Text className={styles.highlight}>{sessionItem.receivedQty}</Text> {scannedProduct.unit}
+                    </Text>
+                  )}
                 </View>
               </View>
             )}
@@ -312,17 +370,25 @@ const ScanPage: React.FC = () => {
               </View>
             )}
 
-            {mode === 'receive' && (
+            {mode === 'receive' && scanCheckResult?.inOrder && (
               <View className={styles.receiveActions}>
                 <View
-                  className={classnames(styles.abnormalTag, styles.shortage)}
+                  className={classnames(
+                    styles.abnormalTag,
+                    styles.shortage,
+                    sessionItem?.status === 'shortage' && styles.active
+                  )}
                   onClick={handleMarkShortage}
                 >
                   <Text className={styles.tagIcon}>📉</Text>
                   标记缺货
                 </View>
                 <View
-                  className={classnames(styles.abnormalTag, styles.expiring)}
+                  className={classnames(
+                    styles.abnormalTag,
+                    styles.expiring,
+                    sessionItem?.status === 'expiring' && styles.active
+                  )}
                   onClick={handleMarkExpiring}
                 >
                   <Text className={styles.tagIcon}>⏰</Text>
@@ -350,22 +416,14 @@ const ScanPage: React.FC = () => {
                   </View>
                 </>
               ) : (
-                <>
-                  <View
-                    className={classnames(styles.actionBtn, styles.secondary)}
-                    onClick={handleAddToOrder}
-                  >
-                    <Text className={styles.actionIcon}>📦</Text>
-                    加入订货单
-                  </View>
-                  <View
-                    className={classnames(styles.actionBtn, styles.primary)}
-                    onClick={handleConfirmCount}
-                  >
-                    <Text className={styles.actionIcon}>✓</Text>
-                    确认收货
-                  </View>
-                </>
+                <View
+                  className={classnames(styles.actionBtn, styles.primary)}
+                  style={{ flex: 1 }}
+                  onClick={handleConfirmCount}
+                >
+                  <Text className={styles.actionIcon}>✓</Text>
+                  完成并返回
+                </View>
               )}
             </View>
           </>

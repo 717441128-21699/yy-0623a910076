@@ -102,3 +102,11 @@ export interface ScanResult {
   product?: Product;
   inventory?: InventoryItem;
 }
+
+export interface ReceiveSession {
+  orderId: string;
+  items: ReceiveItem[];
+  wrongItems: ReceiveItem[];
+  createdAt: string;
+  updatedAt: string;
+}

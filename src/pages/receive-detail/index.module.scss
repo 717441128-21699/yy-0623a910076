@@ -356,3 +356,16 @@
 .btnIcon {
   font-size: $font-size-lg;
 }
+
+.wrongItemBanner {
+  background: $color-tag-red;
+  padding: $spacing-sm $spacing-lg;
+  margin: -$spacing-lg (-$spacing-lg) $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.wrongItemText {
+  font-size: $font-size-sm;
+  color: $color-stock-danger;
+  font-weight: $font-weight-semibold;
+}
